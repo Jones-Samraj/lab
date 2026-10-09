@@ -1,0 +1,744 @@
+//Experiment 2
+
+#include <stdio.h>
+            for (i = 0; i < m; i++)
+            {
+                printf("%d", data[i]);
+            }
+            for (i = m; i < total; i++)
+            {
+                printf("%d", temp[i]);
+            }
+            printf("\n");
+        }
+        else if (choice == 2)
+        {
+           printf("\nEnter number of received bits: ");
+            scanf("%d", &m);
+            printf("Enter the received bits: ");
+            for (i = 0; i < m; i++)
+            {
+                scanf("%d", &data[i]);
+            }
+            printf("Enter number of bits in divisor: ");
+            scanf("%d", &n);
+            printf("Enter the divisor bits: ");
+            for (i = 0; i < n; i++)
+            {
+                scanf("%d", &divisor[i]);
+            }
+            total = m;
+            /* Perform CRC division */
+            crc_division(data, total, divisor, n);
+            printf("\nCRC Remainder: ");
+            error = 0;
+            for (i = total - n + 1; i < total; i++)
+            {
+                printf("%d", data[i]);
+                if (data[i] != 0)
+                {
+                    error = 1;
+                }
+            }
+            if (error == 0)
+            {
+                printf("\nData is error-free.\n");
+            }
+            else
+            {
+                printf("\nError detected in the data.\n");
+            }
+        }
+        else
+        {
+            printf("\nInvalid choice.\n");
+        }
+    }
+    return 0;
+}
+
+#include <stdio.h>
+    unsigned int checksum;
+    while (1)
+    {
+        printf("\n\nCHECKSUM IMPLEMENTATION\n");
+        printf("1. Transmitting side\n");
+        printf("2. Receiving side\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        if (choice == 1)
+        {
+            printf("\nEnter number of data words: ");
+            scanf("%d", &n);
+            printf("Enter the data words:\n");
+            for (i = 0; i < n; i++)
+            {
+                scanf("%u", &data[i]);
+            }
+            checksum = sender(data, n);
+            printf("\nChecksum calculated at sender: %u\n",
+                   checksum);
+            printf("Data sent: ");
+            for (i = 0; i < n; i++)
+            {
+                printf("%u ", data[i]);
+            }
+            printf("%u (Checksum)\n", checksum);
+        }
+        else if (choice == 2)
+        {
+            printf("\nEnter number of received data words: ");
+            scanf("%d", &n);
+            printf("Enter the received data words:\n");
+            for (i = 0; i < n; i++)
+            {
+                scanf("%u", &data[i]);
+            }
+            printf("Enter the received checksum: ");
+            scanf("%u", &checksum);
+            if (receiver(data, n, checksum))
+            {
+                printf("\nData is error-free.\n");
+            }
+            else
+            {
+                printf("\nError detected in received data!\n");
+            }
+        }
+        else if (choice == 3)
+        {
+            exit(0);
+        }
+        else
+        {
+            printf("\nInvalid choice.\n");
+        }
+    }
+    return 0;
+}
+
+
+//Experiment 4
+
+serverarp.java
+import java.io.*;
+import java.net.*;
+class Serverarp
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            ServerSocket server = new ServerSocket(5000);
+            System.out.println("ARP Server Started...");
+            System.out.println("Waiting for client...");
+            Socket client = server.accept();
+            System.out.println("Client connected.");
+            BufferedReader din =
+                new BufferedReader(
+                    new InputStreamReader(client.getInputStream()));
+            PrintWriter dout =
+                new PrintWriter(client.getOutputStream(), true);
+            String ipAddress = din.readLine();
+            String ip[] =
+            {
+                "165.165.80.80",
+                "165.165.79.1"
+            };
+            String mac[] =
+            {
+                "6A:08:AA:C2",
+                "8A:BC:E3:FA"
+            };
+            String result = "MAC address not found";
+            for(int i = 0; i < ip.length; i++)
+            {
+                if(ipAddress.equals(ip[i]))
+                {
+                    result = mac[i];
+                    break;
+                }
+            }
+            dout.println(result);
+            System.out.println("IP Address received : " + ipAddress);
+            System.out.println("MAC Address sent    : " + result);
+            client.close();
+            server.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
+
+clientarp.java
+import java.io.*;
+import java.net.*;
+class Clientarp
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            BufferedReader in =
+                new BufferedReader(
+                    new InputStreamReader(System.in));
+            Socket client = new Socket("127.0.0.1", 5000);
+            BufferedReader din =
+                new BufferedReader(
+                    new InputStreamReader(client.getInputStream()));
+            PrintWriter dout =
+                new PrintWriter(client.getOutputStream(), true);
+            System.out.println("Enter the Logical address (IP):");
+            String ipAddress = in.readLine();
+            dout.println(ipAddress);
+            String macAddress = din.readLine();
+            System.out.println(
+                "The Physical Address is: " + macAddress);
+            client.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
+
+serverrarp.java
+import java.net.*;
+public class serverrarp
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            DatagramSocket server = new DatagramSocket(5001);
+            System.out.println("RARP Server Started...");
+            System.out.println("Waiting for client...");
+            byte[] receiveByte = new byte[1024];
+            byte[] sendByte;
+             DatagramPacket receiver =
+                new DatagramPacket(
+                    receiveByte,
+                    receiveByte.length);
+            server.receive(receiver);
+            String macAddress =
+                new String(
+                    receiver.getData(),
+                    0,
+                    receiver.getLength());
+            String ip[] =
+            {
+                "10.0.3.186"
+            };
+            String mac[] =
+            {
+                "D4:3D:7E:12:A3:D9"
+            };
+            String result = "IP address not found";
+            for(int i = 0; i < ip.length; i++)
+            {
+                if(macAddress.equalsIgnoreCase(mac[i]))
+                {
+                    result = ip[i];
+                    break;
+                }
+            }
+            sendByte = result.getBytes();
+            InetAddress addr = receiver.getAddress();
+            int port = receiver.getPort();
+            DatagramPacket sender =
+                new DatagramPacket(
+                    sendByte,
+                    sendByte.length,
+                    addr,
+                    port);
+            server.send(sender);
+            System.out.println(
+                "MAC Address received : " + macAddress);
+            System.out.println(
+                "IP Address sent       : " + result);
+            server.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
+
+clientrarp.java
+import java.io.*;
+import java.net.*;
+public class clientrarp
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            DatagramSocket client =
+                new DatagramSocket();
+            InetAddress addr =
+                InetAddress.getByName("127.0.0.1");
+            byte[] sendByte;
+            byte[] receiveByte = new byte[1024];
+            BufferedReader in =
+                new BufferedReader(
+                    new InputStreamReader(System.in));
+            System.out.println(
+                "Enter the Physical Address:");
+            String macAddress = in.readLine();
+            sendByte = macAddress.getBytes();
+            DatagramPacket sender =
+                new DatagramPacket(
+                    sendByte,
+                    sendByte.length,
+                    addr,
+                    5001);
+            client.send(sender);
+            DatagramPacket receiver =
+                new DatagramPacket(
+                    receiveByte,
+                    receiveByte.length);
+            client.receive(receiver);
+            String ipAddress =
+                new String(
+                    receiver.getData(),
+                    0,
+                    receiver.getLength());
+            System.out.println(
+                "The Logical Address is: " +
+                ipAddress);
+            client.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
+
+
+//Experiment 5
+
+#include <stdio.h>
+
+struct node {
+    int dist[20];
+    int from[20];
+} route[20];
+
+int main() {
+    int costmat[20][20];
+    int nodes, i, j, k, count = 0;
+
+    printf("Enter the number of nodes: ");
+    scanf("%d", &nodes);
+
+    printf("Enter the cost matrix (Enter 999 for infinity):\n");
+    for (i = 0; i < nodes; i++) {
+        for (j = 0; j < nodes; j++) {
+            scanf("%d", &costmat[i][j]);
+            costmat[i][i] = 0;
+            route[i].dist[j] = costmat[i][j]; // Initialize distance to node j
+            route[i].from[j] = j;             // Initialize next hop
+        }
+    }
+
+    // Bellman-Ford calculation loop
+    do {
+        count = 0;
+        for (i = 0; i < nodes; i++) {
+            for (j = 0; j < nodes; j++) {
+                for (k = 0; k < nodes; k++) {
+                    if (route[i].dist[j] > costmat[i][k] + route[k].dist[j]) {
+                        route[i].dist[j] = costmat[i][k] + route[k].dist[j];
+                        route[i].from[j] = k;
+                        count++;
+                    }
+                }
+            }
+        }
+    } while (count != 0);
+
+    // Display the routing tables
+    for (i = 0; i < nodes; i++) {
+        printf("\nFor router %d\n", i + 1);
+        printf("Node\tVia\tDistance\n");
+        for (j = 0; j < nodes; j++) {
+            printf("%d\t%d\t%d\n", j + 1, route[i].from[j] + 1, route[i].dist[j]);
+        }
+    }
+    return 0;
+}
+
+#include <stdio.h>
+
+#define INFINITY 999
+
+void dijkstra(int n, int cost[20][20], int startnode) {
+    int distance[20], pred[20];
+    int visited[20], count, min_distance, nextnode, i, j;
+
+    // Initialize tracking arrays
+    for (i = 0; i < n; i++) {
+        distance[i] = cost[startnode][i];
+        pred[i] = startnode;
+        visited[i] = 0;
+    }
+
+    distance[startnode] = 0;
+    visited[startnode] = 1;
+    count = 1;
+
+    while (count < n - 1) {
+        min_distance = INFINITY;
+
+        // Find the node at the minimum distance
+        for (i = 0; i < n; i++) {
+            if (distance[i] < min_distance && !visited[i]) {
+                min_distance = distance[i];
+                nextnode = i;
+            }
+        }
+
+        // Check if a better path exists through nextnode
+        visited[nextnode] = 1;
+        for (i = 0; i < n; i++) {
+            if (!visited[i]) {
+                if (min_distance + cost[nextnode][i] < distance[i]) {
+                    distance[i] = min_distance + cost[nextnode][i];
+                    pred[i] = nextnode;
+                }
+            }
+        }
+        count++;
+    }
+
+    // Print the results
+    for (i = 0; i < n; i++) {
+        if (i != startnode) {
+            printf("\nDistance from node %d to %d = %d", startnode + 1, i + 1, distance[i]);
+            printf("\nPath = %d", i + 1);
+            j = i;
+            do {
+                j = pred[j];
+                printf(" <- %d", j + 1);
+            } while (j != startnode);
+        }
+    }
+    printf("\n");
+}
+
+int main() {
+    int cost[20][20], i, j, n, u;
+
+    printf("Enter number of vertices: ");
+    scanf("%d", &n);
+
+    printf("Enter the adjacency matrix (Enter 999 for infinity):\n");
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            scanf("%d", &cost[i][j]);
+        }
+    }
+
+    printf("Enter the starting node (1 to %d): ", n);
+    scanf("%d", &u);
+
+    dijkstra(n, cost, u - 1);
+
+    return 0;
+}
+
+
+//Experiment 6
+
+TCP Server Program
+TCPServer.java
+import java.io.*;
+import java.net.*;
+
+public class TCPServer {
+
+    public static void main(String[] args) {
+
+        int port = 5000;
+
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+
+            System.out.println("TCP Chat Server Started...");
+            System.out.println("Waiting for client connection...");
+
+            Socket socket = serverSocket.accept();
+
+            System.out.println("Client connected successfully!");
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()));
+
+            PrintWriter out = new PrintWriter(
+                    socket.getOutputStream(), true);
+
+            BufferedReader keyboard = new BufferedReader(
+                    new InputStreamReader(System.in));
+
+            String clientMessage;
+            String serverMessage;
+
+            while (true) {
+
+                // Receive message from client
+                clientMessage = in.readLine();
+
+                if (clientMessage == null ||
+                    clientMessage.equalsIgnoreCase("exit")) {
+                    System.out.println("Client ended the chat.");
+                    break;
+                }
+
+                System.out.println("Client: " + clientMessage);
+
+                // Send reply to client
+                System.out.print("Server: ");
+                serverMessage = keyboard.readLine();
+
+                out.println(serverMessage);
+
+                if (serverMessage.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            socket.close();
+            serverSocket.close();
+
+            System.out.println("Chat closed.");
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
+TCP Client Program
+TCPClient.java
+import java.io.*;
+import java.net.*;
+
+public class TCPClient {
+
+    public static void main(String[] args) {
+
+        String serverIP = "127.0.0.1";
+        int port = 5000;
+
+        try {
+            Socket socket = new Socket(serverIP, port);
+
+            System.out.println("Connected to TCP Chat Server.");
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()));
+
+            PrintWriter out = new PrintWriter(
+                    socket.getOutputStream(), true);
+
+            BufferedReader keyboard = new BufferedReader(
+                    new InputStreamReader(System.in));
+
+            String clientMessage;
+            String serverMessage;
+
+            while (true) {
+
+                // Send message to server
+                System.out.print("Client: ");
+                clientMessage = keyboard.readLine();
+
+                out.println(clientMessage);
+
+                if (clientMessage.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                // Receive reply from server
+                serverMessage = in.readLine();
+
+                if (serverMessage == null ||
+                    serverMessage.equalsIgnoreCase("exit")) {
+                    System.out.println("Server ended the chat.");
+                    break;
+                }
+
+                System.out.println("Server: " + serverMessage);
+            }
+
+            socket.close();
+
+            System.out.println("Chat closed.");
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
+UDP Server Program
+UDPServer.java
+import java.io.*;
+import java.net.*;
+
+public class UDPServer {
+
+    public static void main(String[] args) {
+
+        int port = 5001;
+
+        try {
+            DatagramSocket socket = new DatagramSocket(port);
+
+            System.out.println("UDP Chat Server Started...");
+            System.out.println("Waiting for client message...");
+
+            BufferedReader keyboard = new BufferedReader(
+                    new InputStreamReader(System.in));
+
+            byte[] receiveBuffer = new byte[1024];
+            byte[] sendBuffer;
+
+            while (true) {
+
+                // Receive message from client
+                DatagramPacket receivePacket =
+                        new DatagramPacket(receiveBuffer,
+                                receiveBuffer.length);
+
+                socket.receive(receivePacket);
+
+                String clientMessage = new String(
+                        receivePacket.getData(),
+                        0,
+                        receivePacket.getLength());
+
+                System.out.println("Client: " + clientMessage);
+
+                if (clientMessage.equalsIgnoreCase("exit")) {
+                    System.out.println("Client ended the chat.");
+                    break;
+                }
+
+                // Enter server reply
+                System.out.print("Server: ");
+                String serverMessage = keyboard.readLine();
+
+                sendBuffer = serverMessage.getBytes();
+
+                // Send reply to client
+                DatagramPacket sendPacket =
+                        new DatagramPacket(
+                                sendBuffer,
+                                sendBuffer.length,
+                                receivePacket.getAddress(),
+                                receivePacket.getPort());
+
+                socket.send(sendPacket);
+
+                if (serverMessage.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                // Clear receive buffer
+                receiveBuffer = new byte[1024];
+            }
+
+            socket.close();
+
+            System.out.println("Chat closed.");
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
+UDP Client Program
+UDPClient.java
+import java.io.*;
+import java.net.*;
+
+public class UDPClient {
+
+    public static void main(String[] args) {
+
+        String serverIP = "127.0.0.1";
+        int port = 5001;
+
+        try {
+            DatagramSocket socket = new DatagramSocket();
+
+            InetAddress serverAddress =
+                    InetAddress.getByName(serverIP);
+
+            BufferedReader keyboard = new BufferedReader(
+                    new InputStreamReader(System.in));
+
+            byte[] sendBuffer;
+            byte[] receiveBuffer;
+
+            while (true) {
+
+                // Enter client message
+                System.out.print("Client: ");
+                String clientMessage = keyboard.readLine();
+
+                sendBuffer = clientMessage.getBytes();
+
+                // Send message to server
+                DatagramPacket sendPacket =
+                        new DatagramPacket(
+                                sendBuffer,
+                                sendBuffer.length,
+                                serverAddress,
+                                port);
+
+                socket.send(sendPacket);
+
+                if (clientMessage.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                // Receive server reply
+                receiveBuffer = new byte[1024];
+
+                DatagramPacket receivePacket =
+                        new DatagramPacket(
+                                receiveBuffer,
+                                receiveBuffer.length);
+
+                socket.receive(receivePacket);
+
+                String serverMessage = new String(
+                        receivePacket.getData(),
+                        0,
+                        receivePacket.getLength());
+
+                System.out.println("Server: " + serverMessage);
+
+                if (serverMessage.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+
+            socket.close();
+
+            System.out.println("Chat closed.");
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
