@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard - PubNub Version</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: #0d47a1;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background-color: #0d47a1;
+        color: white;
+      }
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+      #sendForm {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      #sendForm input {
+        padding: 8px;
+        font-size: 14px;
+      }
+      #sendForm button {
+        padding: 8px 16px;
+        background-color: #0d47a1;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      #testButton {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #ff5722;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+    <!-- PubNub SDK -->
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.0.js"></script>
+  </head>
+  <body>
+    <h1>Student Dashboard (PubNub Cloud)</h1>
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Class</th>
+          <th>Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Student data will appear here -->
+      </tbody>
+    </table>
+    <h2>Add/Update Student</h2>
+    <form id="sendForm">
+      <input type="text" id="studentId" placeholder="ID" required />
+      <input type="text" id="studentName" placeholder="Name" required />
+      <input type="number" id="studentAge" placeholder="Age" required />
+      <input type="text" id="studentClass" placeholder="Class" required />
+      <input type="text" id="studentGrade" placeholder="Grade" required />
+      <button type="submit">Send Data</button>
+    </form>
+    <button id="testButton">Send Test Student</button>
+    <script>
+      // ====== PubNub Keys ======
+      const publishKey = "pub-c-774ece91-806e-4a81-9bc3-b9d23a9c4ca0"; //
+    //   Replace with yours
+      const subscribeKey = "sub-c-2b7118dd-e0b1-4e14-98c6-aa59010cbe6d"; //
+    //   Replace with yours
+      const channel = "student-dashboard";
+      const tableBody = document.querySelector('#studentsTable tbody');
+      // ====== Initialize PubNub ======
+      const pubnub = new PubNub({
+      publishKey: publishKey,
+      subscribeKey: subscribeKey,
+      uuid: "dashboard-" + Math.random() // unique id per tab
+      });
+      // ====== Add or update student row ======
+      function addOrUpdateStudent(student) {
+      let existingRow = document.getElementById(student.id);
+      if (existingRow) {
+      existingRow.innerHTML = `
+      <td>${student.id}</td>
+      <td>${student.name}</td>
+      <td>${student.age}</td>
+      <td>${student.class}</td>
+      <td>${student.grade}</td>
+      `;
+      } else {
+      const row = document.createElement("tr");
+      row.id = student.id;
+      row.innerHTML = `
+      <td>${student.id}</td>
+      <td>${student.name}</td>
+      <td>${student.age}</td>
+      <td>${student.class}</td>
+      <td>${student.grade}</td>
+      `;
+      tableBody.appendChild(row);
+      }
+      }
+      // ====== Subscribe to PubNub messages ======
+      pubnub.subscribe({ channels: [channel] });
+      pubnub.addListener({
+      message: function(event) {
+      const student = event.message;
+      addOrUpdateStudent(student);
+      }
+      });
+      // ====== Send student via PubNub ======
+      function sendStudent(student) {
+      pubnub.publish({
+      channel: channel,
+      message: student
+      });
+      }
+      // ====== Form handling ======
+      const form = document.getElementById("sendForm");
+      form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const student = {
+      id: document.getElementById("studentId").value,
+      name: document.getElementById("studentName").value,
+      age: document.getElementById("studentAge").value,
+      class: document.getElementById("studentClass").value,
+      grade: document.getElementById("studentGrade").value
+      };
+      sendStudent(student);
+      form.reset();
+      });
+      // ====== Test button ======
+      document.getElementById("testButton").addEventListener("click", function() {
+      const testStudent = { id: "TEST001", name: "Test Student", age: 20, class:
+      "IT", grade: "A+" };
+      sendStudent(testStudent);
+      });
+    </script>
+  </body>
+</html>
