@@ -1,0 +1,238 @@
+exp 1
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
+df = pd.read_csv("StudentsPerformance.csv")
+print(df.head())
+print(df.isnull().sum())
+df = df.dropna().copy()
+
+for c in ['gender', 'lunch', 'test preparation course']:
+    df[c] = LabelEncoder().fit_transform(df[c])
+
+df = pd.get_dummies(df, columns=['race/ethnicity',
+    'parental level of education'], drop_first=True, dtype=int)
+
+cols = ['math score', 'reading score', 'writing score']
+df[cols] = StandardScaler().fit_transform(df[cols])
+
+
+df[cols].hist(figsize=(10, 4))
+plt.tight_layout()
+plt.show()
+
+for c in cols:
+    sns.boxplot(data=df, x='gender', y=c)
+    plt.show()
+
+sns.heatmap(df.corr(numeric_only=True), cmap='coolwarm')
+plt.show()
+
+for c in cols:
+    sns.barplot(data=df, x='test preparation course', y=c)
+    plt.show()
+
+
+    ---------------------------------------------------------------------------
+
+
+    exp 2
+
+    import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from google.colab import files
+
+df = pd.read_csv('StudentsPerformance.csv')
+
+num_cols = ['math score', 'reading score', 'writing score']
+cat_cols = ['gender', 'race/ethnicity', 'parental level of education',
+            'lunch', 'test preparation course']
+
+df[num_cols].hist(figsize=(12, 6), bins=30)
+plt.tight_layout()
+plt.show()
+
+
+for col in cat_cols:
+    sns.countplot(data=df, y=col, hue=col, legend=False)
+    plt.title(col)
+    plt.show()
+
+
+for col in num_cols:
+    sns.boxplot(y=df[col])
+    plt.title(col)
+    plt.show()
+
+
+for col in cat_cols:
+    df[col].value_counts().plot.pie(autopct='%1.1f%%')
+    plt.title(col)
+    plt.ylabel('')
+    plt.show()
+
+
+for col in num_cols:
+    sns.ecdfplot(data=df, x=col)
+    plt.title(col)
+    plt.show()
+
+
+for col in num_cols:
+    sns.violinplot(y=df[col])
+    plt.title(col)
+    plt.show()
+
+
+
+----------------------------------------------------------------------------
+
+exp 3
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("StudentsPerformance.csv")
+
+num = ['math score', 'reading score', 'writing score']
+cat = ['gender', 'race/ethnicity', 'parental level of education',
+       'lunch', 'test preparation course']
+
+sns.pairplot(df[num])
+plt.show()
+
+sns.heatmap(df[num].corr(), annot=True, cmap='coolwarm')
+plt.title("Correlation Heatmap")
+plt.show()
+
+for c in cat:
+    for s in num:
+        sns.boxplot(data=df, x=c, y=s)
+        plt.xticks(rotation=45)
+        plt.title(f"{s} by {c}")
+        plt.tight_layout()
+        plt.show()
+
+for a, b in [('gender', 'race/ethnicity'),
+             ('lunch', 'test preparation course')]:
+    sns.heatmap(pd.crosstab(df[a], df[b], normalize='index'),annot=True, cmap='YlGnBu')
+    plt.title(f"{a} vs {b}")
+    plt.tight_layout()
+    plt.show()
+
+
+sns.violinplot(data=df, x='test preparation course',y='math score', hue='gender', split=True)
+plt.title("Math Score by Test Preparation and Gender")
+plt.show()
+
+sns.swarmplot(data=df, x='parental level of education',y='math score', hue='lunch', size=3)
+plt.title("Math Score by Parental Education and Lunch")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+
+---------------------------------------------------------------
+
+
+exp 4
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+from sklearn.preprocessing import LabelEncoder
+
+df = pd.read_csv("StudentsPerformance.csv")
+enc = df.copy()
+
+cat = ['gender', 'race/ethnicity', 'parental level of education',
+       'lunch', 'test preparation course']
+
+for c in cat:
+    enc[c] = LabelEncoder().fit_transform(enc[c])
+
+num = ['math score', 'reading score', 'writing score']
+
+sns.pairplot(df, vars=num, hue='test preparation course')
+plt.show()
+
+sns.heatmap(enc.corr(numeric_only=True), cmap='coolwarm')
+plt.show()
+
+
+px.parallel_coordinates(enc,dimensions=num + ['gender', 'test preparation course'],color='math score').show()
+
+px.scatter_matrix(df, dimensions=num, color='gender',symbol='test preparation course').show()
+
+
+
+---------------------------------------------------------------------------
+
+
+exp 5
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_openml
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import time
+
+# 1. Load MNIST dataset
+X, y = fetch_openml('mnist_784', version=1,
+                    as_frame=False, return_X_y=True)
+
+# 2. Select 2000 images
+np.random.seed(42)
+i = np.random.choice(len(X), 2000, replace=False)
+X, y = X[i], y[i].astype(int)
+
+# 3. Scale data
+X = StandardScaler().fit_transform(X)
+
+# 4. PCA
+t = time.time()
+Xp = PCA(n_components=2).fit_transform(X)
+print("PCA variance:", PCA(n_components=2).fit(X).explained_variance_ratio_)
+print("PCA time:", round(time.time() - t, 2), "seconds")
+
+# 5. t-SNE
+t = time.time()
+Xt = TSNE(n_components=2, random_state=42,
+          perplexity=30, init='pca').fit_transform(X)
+print("t-SNE time:", round(time.time() - t, 2), "seconds")
+
+# 6. Plot PCA and t-SNE
+plt.figure(figsize=(10, 4))
+
+for j, (Z, title) in enumerate([(Xp, 'PCA'), (Xt, 't-SNE')], 1):
+    plt.subplot(1, 2, j)
+    plt.scatter(Z[:, 0], Z[:, 1], c=y, cmap='tab10', s=5)
+    plt.title(title)
+    plt.colorbar()
+
+plt.tight_layout()
+plt.show()
+
+# 7. Cumulative explained variance
+p = PCA().fit(X)
+v = np.cumsum(p.explained_variance_ratio_)
+
+plt.plot(range(1, len(v) + 1), v)
+plt.axhline(0.95, linestyle='--', label='95% variance')
+plt.xlabel("Number of Components")
+plt.ylabel("Cumulative Explained Variance")
+plt.title("PCA Explained Variance")
+plt.grid()
+plt.legend()
+plt.show()
+
+print("Components for 95% variance:", np.argmax(v >= 0.95) + 1)
